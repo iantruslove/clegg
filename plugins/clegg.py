@@ -107,6 +107,7 @@ class Clegg(BotPlugin):
 
         self.team_data = {
             "team_a": {
+                "captain": "@luser",
                 "answers": {
                     # A score of 0 indicates an answer was submitted but was wrong.
                     # A non-zero score mea
@@ -115,6 +116,7 @@ class Clegg(BotPlugin):
                 }
             },
             "team_b": {
+                "captain": "@bob",
                 "answers": {
                     # A score of 0 indicates an answer was submitted but was wrong.
                     # A non-zero score mea
@@ -123,6 +125,7 @@ class Clegg(BotPlugin):
                 }
             },
             "team_c": {
+                "captain": "@alice",
                 "answers": {
                     # A score of 0 indicates an answer was submitted but was wrong.
                     # A non-zero score mea
