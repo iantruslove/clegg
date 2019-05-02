@@ -40,17 +40,57 @@
 # 2) WinningestTeam - 1200 pts <<<<
 # 6) NextPlace - 1000 pts
 
+# Add team members -- then we can send them audio files to their badges
 
 
+from errbot import BotPlugin, botcmd, arg_botcmd, webhook
+
+# TODO: Load this in from file on startup
+ANSWER_SHEET = {
+    "crypto1": {"answer": "bloop", "score": 150},
+    "crypto2": {"answer": "baasdfsdf", "score": 200},
+}
 
 
-import datetime
-import errbot
-from errbot import BotPlugin, botcmd, re_botcmd
-#from errbot_backend_zulip import zulip
-#from errbot_backend_zulip import ZulipIdentifier
-import pprint
-import requests
+def get_score(question, answer, answer_sheet):
+    """Returns an integer score for correct answers, 0 for incorrect answers, and ``None`` otherwise"""
+    if question in answer_sheet:
+        if answer_sheet[question]["answer"] == answer:
+            return answer_sheet[question]["score"]
+        else:
+            return 0
+    else:
+        return None
+
+
+def score_team_answers(answers, answer_sheet):
+    results = {}
+    for question, answer in answers.items():
+        score = get_score(question, answer, answer_sheet)
+        if score is not None:
+            results[question] = score
+    return results
+
+
+def total_score(scored_answers):
+    """Returns a total score.
+
+    Params:
+    - scored_answers: map of questions to integers scores.
+    """
+    return sum([scored_answers[question] for question in scored_answers])
+
+
+leaderboard = {
+    "team_a": {
+        "answers": {
+            # A score of 0 indicates an answer was submitted but was wrong.
+            # A non-zero score mea
+            "crypto1": "bloop",
+            "crypto2": "",
+        }
+    }
+}
 
 
 class Clegg(BotPlugin):
@@ -58,78 +98,71 @@ class Clegg(BotPlugin):
     Clegg
     """
 
-    # def activate(self):
-    #     """
-    #     Triggers on plugin activation
-
-    #     You should delete it if you're not using it to override any default behaviour
-    #     """
-    #     super(Bloopty, self).activate()
-
-    # def deactivate(self):
-    #     """
-    #     Triggers on plugin deactivation
-
-    #     You should delete it if you're not using it to override any default behaviour
-    #     """
-    #     super(Bloopty, self).deactivate()
-
-    # def get_configuration_template(self):
-    #     """
-    #     Defines the configuration structure this plugin supports
-
-    #     You should delete it if your plugin doesn't use any configuration like this
-    #     """
-    #     return {'EXAMPLE_KEY_1': "Example value",
-    #             'EXAMPLE_KEY_2': ["Example", "Value"]
-    #            }
-
-    # def check_configuration(self, configuration):
-    #     """
-    #     Triggers when the configuration is checked, shortly before activation
-
-    #     Raise a errbot.ValidationException in case of an error
-
-    #     You should delete it if you're not using it to override any default behaviour
-    #     """
-    #     super(Bloopty, self).check_configuration(configuration)
-
-    # def callback_connect(self):
-    #     """
-    #     Triggers when bot is connected
-
-    #     You should delete it if you're not using it to override any default behaviour
-    #     """
-    #     pass
-
-    def callback_message(self, message):
+    def activate(self):
         """
-        Triggered for every received message that isn't coming from the bot itself
+        Triggers on plugin activation
+
+        You should delete it if you're not using it to override any default behaviour
         """
-        utc_now = datetime.datetime.utcnow()
 
-        try:
-            document = {
-                "topic": message.frm.room.title,
-                "subtopic": message.frm.room.subject,
-                "from_name": message.frm.fullname,
-                "from_email": message.frm.person,
-                "url": message.extras["url"],
-                "source": "zulip",
-                "message": message.body,
-                "timestamp": (str(utc_now) + "Z").replace(" ", "T"),
-            }
-        except Exception:
-            self.log.debug("Can't get correct message data for indexing.")
-            return
+        self.team_data = {
+            "team_a": {
+                "answers": {
+                    # A score of 0 indicates an answer was submitted but was wrong.
+                    # A non-zero score mea
+                    "crypto1": "bloop",
+                    "crypto2": "",
+                }
+            },
+            "team_b": {
+                "answers": {
+                    # A score of 0 indicates an answer was submitted but was wrong.
+                    # A non-zero score mea
+                    "crypto1": "",
+                    "crypto2": "",
+                }
+            },
+            "team_c": {
+                "answers": {
+                    # A score of 0 indicates an answer was submitted but was wrong.
+                    # A non-zero score mea
+                    "crypto1": "bloop",
+                    "crypto2": "baasdfsdf",
 
-        pp = pprint.PrettyPrinter()
+                }
+            },
+        }
 
-        index_base = "topic_thunder"
-        index = "{}_{}_week{:02d}".format(
-            index_base, utc_now.year, utc_now.isocalendar()[1]
-        )
+        super(Clegg, self).activate()
 
-        self.log.debug("Indexing into %s: %s", index, pp.pformat(document))
-        r = requests.post("http://localhost:9200/{}/_doc".format(index), json=document)
-        self.log.debug("ES index result: %s - %s", r.status_code, r.json())
+    # TODO: implement this
+    @botcmd(split_args_with=None)
+    def register(self, message, args):
+        """A command which simply returns 'Example'"""
+        return "Example"
+
+    # TODO: implement this
+    @botcmd(split_args_with=None)
+    def submit_answer(self, message, args):
+        """A command which simply returns 'Example'"""
+        return "Example"
+
+    # TODO: implement this
+    @botcmd(split_args_with=None)
+    def team_status(self, message, args):
+        """A command which simply returns 'Example'"""
+        return "Example"
+
+    # TODO: template the response to this
+    @botcmd(split_args_with=None)
+    def leaderboard(self, message, args):
+        answers = {
+            team_name: self.team_data[team_name]["answers"]
+            for team_name in self.team_data
+        }
+        scores = [
+            (team_name, total_score(score_team_answers(answers[team_name], ANSWER_SHEET)))
+            for team_name in answers
+        ]
+
+        return sorted(scores, key=lambda x: x[1], reverse=True)
