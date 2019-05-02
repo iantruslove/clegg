@@ -1,0 +1,9 @@
+[Core]
+name = clegg
+module = clegg
+
+[Documentation]
+description = Clegg
+
+[Python]
+version = 3

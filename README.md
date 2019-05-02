@@ -1,0 +1,1 @@
+# Clegg - competition bot
