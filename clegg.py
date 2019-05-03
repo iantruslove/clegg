@@ -254,3 +254,10 @@ class Clegg(BotPlugin):
         yield "Current leaderboard:"
         for team, score in leaderboard_data:
             yield "{} - {}".format(score, team)
+
+    @botcmd(split_args_with=None)
+    def help(self, msg, args):
+        yield "Commands:"
+        yield "- !register"
+        yield "- !answer <team_name> <answer>"
+        yield "- !leaderboard"
