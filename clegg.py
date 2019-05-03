@@ -168,7 +168,12 @@ class Clegg(BotPlugin):
 
         sender = str(message.frm)
 
-        team_name, answer, *rest = args
+        if len(args) != 2:
+            yield "Wrong number of args."
+            yield "<team_name> <answer>"
+            return
+
+        team_name, answer = args
 
         self.log.info(
             "Sender: %s, Team: %s, Answer: %s",
@@ -200,7 +205,7 @@ class Clegg(BotPlugin):
             question = answers_to_questions[answer]
             self.team_data[team_name]["answers"][question] = answer
             self.save_team_data()
-            return "Yes"
+            return "Yes, correct answer"
         else:
             return "Nice try. But not good enough. Try again."
 
