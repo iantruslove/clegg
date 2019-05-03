@@ -90,12 +90,12 @@ class Clegg(BotPlugin):
 
     def load_question_data(self):
         try:
-            self.data_file = os.environ["CLEGG_QUESTIONS_FILE"]
+            self.questions_file = os.environ["CLEGG_QUESTIONS_FILE"]
         except Exception:
             self.log.error("Missing CLEGG_QUESTIONS_FILE env var")
             raise Exception("Missing CLEGG_QUESTIONS_FILE env var")
 
-        filename = self.data_file
+        filename = self.questions_file
         with open(filename) as f:
             try:
                 self.answer_sheet = json.load(f)
