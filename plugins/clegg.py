@@ -151,7 +151,7 @@ class Clegg(BotPlugin):
     def submit_answer(self, message, args):
         """<team_name> <question> <answer>"""
 
-        sender = message.frm
+        sender = str(message.frm)
 
         team_name, question, answer, *rest = args
 
@@ -165,28 +165,32 @@ class Clegg(BotPlugin):
 
         def is_captain(team, captain, team_data):
             if captain is None:
-                yield "Captain is None, definitely false"
                 return False
-
             data = team_data.get(team, {})
-            yield data
-
             return data.get("captain", None) == captain
 
         def is_valid_question(question):
             return question in ANSWER_SHEET
 
-        if is_captain(team_name, sender, self.team_data):
-            if is_valid_question(question):
-                self.team_data[team_name]["answers"][question] = answer
-                if ANSWER_SHEET[question]["answer"] == answer:
-                    yield "Correct!"
-                else:
-                    yield "Nice try. But not good enough. Try again."
-            else:
-                yield "That's not a real question"
+        self.log.info("Teams: %s", self.team_data.keys())
+
+        if team_name not in set(self.team_data.keys()):
+            return "That's not even a team"
+
+        if not is_captain(team_name, sender, self.team_data):
+            return "You're not the boss of me. Or of that team."
+
+        if not is_valid_question(question):
+            return "That's not a real question"
+
+        self.team_data[team_name]["answers"][question] = answer
+        self.save_team_data()
+        if ANSWER_SHEET[question]["answer"] == answer:
+            return "Correct!"
         else:
-            yield "You're not the boss of me. Or of that team"
+            return "Nice try. But not good enough. Try again."
+
+
 
     # TODO: Make sure we're getting the team name properly
     # TODO: Template the response
