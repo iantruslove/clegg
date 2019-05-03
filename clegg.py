@@ -47,6 +47,11 @@ import io
 import json
 import os
 
+
+def get_stripped_username(message):
+    return message.frm.split("!")[0]
+
+
 def get_score(question, answer, answer_sheet):
     """Returns an integer score for correct answers, 0 for incorrect answers, and ``None``
     otherwise"""
@@ -148,7 +153,7 @@ class Clegg(BotPlugin):
         """Registers a new team"""
 
         team_name = args[0]
-        sender = str(message.frm)
+        sender = get_stripped_username(message)
         team_captains = {
             self.team_data[team_name]["captain"] for team_name in self.team_data
         }
@@ -173,7 +178,7 @@ class Clegg(BotPlugin):
     def answer(self, message, args):
         """!answer <team_name> <answer>"""
 
-        sender = str(message.frm)
+        sender = get_stripped_username(message)
 
         if len(args) != 2:
             return "Wrong number of args. <team_name> <answer>"
