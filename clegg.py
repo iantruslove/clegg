@@ -288,7 +288,12 @@ class Clegg(BotPlugin):
         """Get a list of challenges"""
         yield "Challenges:"
         for challenge in self.answer_sheet:
-            yield "- {}".format(str(challenge))
+            if "description" in self.answer_sheet[challenge]:
+                yield "- {} - {}".format(
+                    str(challenge), self.answer_sheet[challenge]["description"]
+                )
+            else:
+                yield "- {}".format(str(challenge))
 
     @botcmd(split_args_with=None)
     def help(self, msg, args):
