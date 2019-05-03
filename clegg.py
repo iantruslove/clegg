@@ -273,7 +273,7 @@ class Clegg(BotPlugin):
             yield "{} - {}".format(score, team)
 
     @botcmd(split_args_with=" ")
-    def leaderboard(self, message, args):
+    def hint(self, message, args):
         """Get a hint"""
         if len(args) != 1:
             return "What challenge?"
