@@ -49,7 +49,7 @@ import os
 
 
 def get_stripped_username(message):
-    return message.frm.split("!")[0]
+    return str(message.frm).split("!")[0]
 
 
 def get_score(question, answer, answer_sheet):
