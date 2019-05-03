@@ -165,15 +165,14 @@ class Clegg(BotPlugin):
         if sender in team_captains:
             return "You've already registered a team ({})".format("team")
 
-        self.team_data[team_name] = {
-            "captain": sender,
-            "answers": {}
-        }
+        self.team_data[team_name] = {"captain": sender, "answers": {}}
 
         self.save_team_data()
 
-        return ("We registered you as the captain of \"{}\". "
-                "Only you can submit answers for your team.".format(team_name))
+        return (
+            'We registered you as the captain of "{}". '
+            "Only you can submit answers for your team.".format(team_name)
+        )
 
     # TODO: Help, arg checking
     @botcmd(split_args_with=" ")
@@ -187,12 +186,7 @@ class Clegg(BotPlugin):
 
         team_name, answer = args
 
-        self.log.info(
-            "Sender: %s, Team: %s, Answer: %s",
-            sender,
-            team_name,
-            answer,
-        )
+        self.log.info("Sender: %s, Team: %s, Answer: %s", sender, team_name, answer)
 
         def is_captain(team, captain, team_data):
             if captain is None:
