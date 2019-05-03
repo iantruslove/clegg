@@ -291,3 +291,5 @@ class Clegg(BotPlugin):
         yield "- !leaderboard"
         yield "- !challenges"
         yield "- !hint <challenge>"
+        yield "- !gitstring"
+        yield "- !gitflag <.git repo url>"
