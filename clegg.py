@@ -283,10 +283,18 @@ class Clegg(BotPlugin):
         else:
             return "No hints for that"
 
+    @botcmd(split_args_with=" ")
+    def challenges(self, message, args):
+        """Get a list of challenges"""
+        yield "Challenges:"
+        for challenge in self.answer_sheet:
+            yield "- {}".format(str(challenge))
+
     @botcmd(split_args_with=None)
     def help(self, msg, args):
         yield "Commands:"
         yield "- !register"
         yield "- !answer <team_name> <answer>"
         yield "- !leaderboard"
+        yield "- !challenges"
         yield "- !hint <challenge>"
