@@ -189,11 +189,9 @@ class Clegg(BotPlugin):
 
     # TODO: Make sure we're getting the team name properly
     # TODO: Template the response
-    @botcmd(split_args_with=None)
+    @botcmd(split_args_with=" ")
     def team_status(self, message, args):
         """Returns a dict of ``{team_name: {question, status}}``"""
-
-        team_name = message.split(" ")[0]
 
         def result(question, team_answers, answer_sheet):
             if team_answers.get(question, None) is not None:
@@ -204,7 +202,15 @@ class Clegg(BotPlugin):
             else:
                 return "unanswered"
 
-        team_answers = self.team_data.get(team_name, {}).get("answers", {})
+        if len(args) < 1 or args[0] == "":
+            return "Which team?"
+
+        team_name = args[0]
+
+        if team_name not in set(self.team_data.keys()):
+            return "That's not a team"
+
+        team_answers = self.team_data[team_name]["answers"]
 
         answers = {
             question: result(question, team_answers, ANSWER_SHEET)
