@@ -169,9 +169,7 @@ class Clegg(BotPlugin):
         sender = str(message.frm)
 
         if len(args) != 2:
-            yield "Wrong number of args."
-            yield "<team_name> <answer>"
-            return
+            return "Wrong number of args. <team_name> <answer>"
 
         team_name, answer = args
 
@@ -188,7 +186,7 @@ class Clegg(BotPlugin):
             data = team_data.get(team, {})
             return data.get("captain", None) == captain
 
-        self.log.info("Teams: %s", self.team_data.keys())
+        self.log.info("Teams: %s", list(self.team_data.keys()))
 
         if team_name not in set(self.team_data.keys()):
             return "That's not even a team"
