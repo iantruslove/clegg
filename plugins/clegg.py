@@ -84,18 +84,6 @@ def total_score(scored_answers):
     return sum([scored_answers[question] for question in scored_answers])
 
 
-leaderboard = {
-    "team_a": {
-        "answers": {
-            # A score of 0 indicates an answer was submitted but was wrong.
-            # A non-zero score mea
-            "crypto1": "bloop",
-            "crypto2": "",
-        }
-    }
-}
-
-
 class Clegg(BotPlugin):
     """
     Clegg
