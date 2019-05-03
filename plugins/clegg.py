@@ -47,6 +47,9 @@ import io
 import json
 import os
 
+# TODO: !hint <question>
+HINTS = {
+    "crypto2": "it's something clever"
 }
 
 
