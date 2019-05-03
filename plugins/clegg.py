@@ -53,7 +53,8 @@ ANSWER_SHEET = {
 
 
 def get_score(question, answer, answer_sheet):
-    """Returns an integer score for correct answers, 0 for incorrect answers, and ``None`` otherwise"""
+    """Returns an integer score for correct answers, 0 for incorrect answers, and ``None``
+    otherwise"""
     if question in answer_sheet:
         if answer_sheet[question]["answer"] == answer:
             return answer_sheet[question]["score"]
@@ -113,7 +114,7 @@ class Clegg(BotPlugin):
                     # A non-zero score mea
                     "crypto1": "bloop",
                     "crypto2": "",
-                }
+                },
             },
             "team_b": {
                 "captain": "@bob",
@@ -122,7 +123,7 @@ class Clegg(BotPlugin):
                     # A non-zero score mea
                     "crypto1": "",
                     "crypto2": "",
-                }
+                },
             },
             "team_c": {
                 "captain": "@alice",
@@ -131,40 +132,100 @@ class Clegg(BotPlugin):
                     # A non-zero score mea
                     "crypto1": "bloop",
                     "crypto2": "baasdfsdf",
-
-                }
+                },
             },
         }
 
         super(Clegg, self).activate()
 
     # TODO: implement this
-    @botcmd(split_args_with=None)
+    @botcmd(split_args_with=" ")
     def register(self, message, args):
-        """A command which simply returns 'Example'"""
-        return "Example"
+        """Registers a new team"""
 
-    # TODO: implement this
-    @botcmd(split_args_with=None)
+        pass
+
+    # TODO: Help, arg checking
+    @botcmd(split_args_with=" ")
     def submit_answer(self, message, args):
-        """A command which simply returns 'Example'"""
-        return "Example"
+        """<team_name> <question> <answer>"""
 
-    # TODO: implement this
+        sender = message.frm
+
+        team_name, question, answer, *rest = args
+
+        self.log.info(
+            "Sender: %s, Team: %s, Question: %s, Answer: %s",
+            sender,
+            team_name,
+            question,
+            answer,
+        )
+
+        def is_captain(team, captain, team_data):
+            if captain is None:
+                yield "Captain is None, definitely false"
+                return False
+
+            data = team_data.get(team, {})
+            yield data
+
+            return data.get("captain", None) == captain
+
+        def is_valid_question(question):
+            return question in ANSWER_SHEET
+
+        if is_captain(team_name, sender, self.team_data):
+            if is_valid_question(question):
+                self.team_data[team_name]["answers"][question] = answer
+                if ANSWER_SHEET[question]["answer"] == answer:
+                    yield "Correct!"
+                else:
+                    yield "Nice try. But not good enough. Try again."
+            else:
+                yield "That's not a real question"
+        else:
+            yield "You're not the boss of me. Or of that team"
+
+    # TODO: Make sure we're getting the team name properly
+    # TODO: Template the response
     @botcmd(split_args_with=None)
     def team_status(self, message, args):
-        """A command which simply returns 'Example'"""
-        return "Example"
+        """Returns a dict of ``{team_name: {question, status}}``"""
+
+        team_name = message.split(" ")[0]
+
+        def result(question, team_answers, answer_sheet):
+            if team_answers.get(question, None) is not None:
+                if team_answers.get(question) == answer_sheet[question]["answer"]:
+                    return "correct"
+                else:
+                    return "incorrect"
+            else:
+                return "unanswered"
+
+        team_answers = self.team_data.get(team_name, {}).get("answers", {})
+
+        answers = {
+            question: result(question, team_answers, ANSWER_SHEET)
+            for question in ANSWER_SHEET
+        }
+        return answers
 
     # TODO: template the response to this
     @botcmd(split_args_with=None)
     def leaderboard(self, message, args):
+        """Returns a list of ``(team_name, score)`` tuples, sorted with winningest team first"""
+
         answers = {
             team_name: self.team_data[team_name]["answers"]
             for team_name in self.team_data
         }
         scores = [
-            (team_name, total_score(score_team_answers(answers[team_name], ANSWER_SHEET)))
+            (
+                team_name,
+                total_score(score_team_answers(answers[team_name], ANSWER_SHEET)),
+            )
             for team_name in answers
         ]
 
