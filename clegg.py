@@ -47,12 +47,6 @@ import io
 import json
 import os
 
-# TODO: !hint <question>
-HINTS = {
-    "crypto2": "it's something clever"
-}
-
-
 def get_score(question, answer, answer_sheet):
     """Returns an integer score for correct answers, 0 for incorrect answers, and ``None``
     otherwise"""
