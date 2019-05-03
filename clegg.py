@@ -293,3 +293,8 @@ class Clegg(BotPlugin):
         yield "- !hint <challenge>"
         yield "- !gitstring"
         yield "- !gitflag <.git repo url>"
+        yield ""
+        yield "The answers look like"
+        yield "  key{this_is_not_an_answer}"
+        yield "Answer this with"
+        yield "   !answer MyTeamName this_is_not_an_answer"
