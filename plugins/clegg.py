@@ -121,35 +121,13 @@ class Clegg(BotPlugin):
         You should delete it if you're not using it to override any default behaviour
         """
 
-        self.team_data = {
-            "team_a": {
-                "captain": "@luser",
-                "answers": {
-                    # A score of 0 indicates an answer was submitted but was wrong.
-                    # A non-zero score mea
-                    "crypto1": "bloop",
-                    "crypto2": "",
-                },
-            },
-            "team_b": {
-                "captain": "@bob",
-                "answers": {
-                    # A score of 0 indicates an answer was submitted but was wrong.
-                    # A non-zero score mea
-                    "crypto1": "",
-                    "crypto2": "",
-                },
-            },
-            "team_c": {
-                "captain": "@alice",
-                "answers": {
-                    # A score of 0 indicates an answer was submitted but was wrong.
-                    # A non-zero score mea
-                    "crypto1": "bloop",
-                    "crypto2": "baasdfsdf",
-                },
-            },
-        }
+        try:
+            self.data_file = os.environ["CLEGG_DATA_FILE"]
+        except Exception:
+            self.log.error("Missing CLEGG_DATA_FILE env var")
+            raise Exception("Missing CLEGG_DATA_FILE env var")
+
+        self.load_team_data()
 
         super(Clegg, self).activate()
 
