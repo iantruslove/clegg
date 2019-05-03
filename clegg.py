@@ -276,7 +276,7 @@ class Clegg(BotPlugin):
         """Get a list of challenges"""
         yield "Challenges:"
         for challenge in self.answer_sheet:
-            if "description" in self.answer_sheet[challenge]:
+            if "description" in self.answer_sheet[challenge] and self.answer_sheet[challenge]["description"] != "":
                 yield "- {} - {}".format(
                     str(challenge), self.answer_sheet[challenge]["description"]
                 )
