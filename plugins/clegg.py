@@ -42,8 +42,10 @@
 
 # Add team members -- then we can send them audio files to their badges
 
-
 from errbot import BotPlugin, botcmd, arg_botcmd, webhook
+import io
+import json
+import os
 
 # TODO: Load this in from file on startup
 ANSWER_SHEET = {
@@ -98,6 +100,19 @@ class Clegg(BotPlugin):
     """
     Clegg
     """
+
+    def load_team_data(self):
+        filename = self.data_file
+        with open(filename) as f:
+            try:
+                self.team_data = json.load(f)
+            except Exception:
+                self.log.exception("JSON Exception")
+
+    def save_team_data(self):
+        filename = self.data_file
+        with open(filename, mode="w") as f:
+            json.dump(self.team_data, f, indent=2)
 
     def activate(self):
         """
