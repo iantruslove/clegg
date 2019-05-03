@@ -102,6 +102,20 @@ class Clegg(BotPlugin):
             except Exception:
                 self.log.exception("JSON Exception")
 
+    def load_hint_data(self):
+        try:
+            self.hints_file = os.environ["CLEGG_HINTS_FILE"]
+        except Exception:
+            self.log.error("Missing CLEGG_HINTS_FILE env var")
+            raise Exception("Missing CLEGG_HINTS_FILE env var")
+
+        filename = self.hints_file
+        with open(filename) as f:
+            try:
+                self.hints = json.load(f)
+            except Exception:
+                self.log.exception("JSON Exception")
+
     def load_team_data(self):
         try:
             self.data_file = os.environ["CLEGG_DATA_FILE"]
@@ -129,8 +143,8 @@ class Clegg(BotPlugin):
         """
 
         self.load_team_data()
-
         self.load_question_data()
+        self.load_hint_data()
 
         super(Clegg, self).activate()
 
@@ -258,9 +272,21 @@ class Clegg(BotPlugin):
         for team, score in leaderboard_data:
             yield "{} - {}".format(score, team)
 
+    @botcmd(split_args_with=" ")
+    def leaderboard(self, message, args):
+        """Get a hint"""
+        if len(args) != 1:
+            return "What challenge?"
+
+        if args[0] in self.hints:
+            return self.hints[args[0]]
+        else:
+            return "No hints for that"
+
     @botcmd(split_args_with=None)
     def help(self, msg, args):
         yield "Commands:"
         yield "- !register"
         yield "- !answer <team_name> <answer>"
         yield "- !leaderboard"
+        yield "- !hint <challenge>"
