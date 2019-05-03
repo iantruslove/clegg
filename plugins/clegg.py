@@ -124,7 +124,27 @@ class Clegg(BotPlugin):
     def register(self, message, args):
         """Registers a new team"""
 
-        pass
+        team_name = args[0]
+        sender = str(message.frm)
+        team_captains = {
+            self.team_data[team_name]["captain"] for team_name in self.team_data
+        }
+
+        if team_name in self.team_data.keys():
+            return "That team is already registered"
+
+        if sender in team_captains:
+            return "You've already registered a team: {}".format("team")
+
+        self.team_data[team_name] = {
+            "captain": sender,
+            "answers": {}
+        }
+
+        self.save_team_data()
+
+        return ("We registered you as the captain of \"{}\". "
+                "Only you can submit answers for your team.".format(team_name))
 
     # TODO: Help, arg checking
     @botcmd(split_args_with=" ")
