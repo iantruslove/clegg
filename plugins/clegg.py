@@ -14,15 +14,15 @@
 # > That team is already registered.
 # > There's a bad character in there.
 
-# !submit_answer
-# > submit_answer <team-name> <event> <answer>
+# !answer
+# > answer <team-name> <answer>
 #   Valid events are: Crypto1, Crypto2, Crypto3
 
-# !submit_answer WinningestTeam Cryptography-1 FooBarBaz
+# !answer WinningestTeam FooBarBaz
 # > Nice try. But that's not correct.
 # > Correct!
 
-# !submit_answer NotMyTeam Cryptography-1 FooBarBaz
+# !answer NotMyTeam FooBarBaz
 # > That's not your team
 
 # !team_status WinnengestTeam
@@ -148,18 +148,17 @@ class Clegg(BotPlugin):
 
     # TODO: Help, arg checking
     @botcmd(split_args_with=" ")
-    def submit_answer(self, message, args):
-        """<team_name> <question> <answer>"""
+    def answer(self, message, args):
+        """!answer <team_name> <answer>"""
 
         sender = str(message.frm)
 
-        team_name, question, answer, *rest = args
+        team_name, answer, *rest = args
 
         self.log.info(
-            "Sender: %s, Team: %s, Question: %s, Answer: %s",
+            "Sender: %s, Team: %s, Answer: %s",
             sender,
             team_name,
-            question,
             answer,
         )
 
@@ -169,9 +168,6 @@ class Clegg(BotPlugin):
             data = team_data.get(team, {})
             return data.get("captain", None) == captain
 
-        def is_valid_question(question):
-            return question in ANSWER_SHEET
-
         self.log.info("Teams: %s", self.team_data.keys())
 
         if team_name not in set(self.team_data.keys()):
@@ -180,53 +176,51 @@ class Clegg(BotPlugin):
         if not is_captain(team_name, sender, self.team_data):
             return "You're not the boss of me. Or of that team."
 
-        if not is_valid_question(question):
-            return "That's not a real question"
+        answers_to_questions = {
+            ANSWER_SHEET[question]["answer"]: question
+            for question in ANSWER_SHEET
+        }
 
-        self.team_data[team_name]["answers"][question] = answer
-        self.save_team_data()
-        if ANSWER_SHEET[question]["answer"] == answer:
-            return "Correct!"
+        if answer in answers_to_questions:
+            question = answers_to_questions[answer]
+            self.team_data[team_name]["answers"][question] = answer
+            self.save_team_data()
+            return "Yes"
         else:
             return "Nice try. But not good enough. Try again."
 
+    # @botcmd(split_args_with=" ")
+    # def team_status(self, message, args):
+    #     """Returns a dict of ``{team_name: {question, status}}``"""
 
+    #     def result(question, team_answers, answer_sheet):
+    #         if team_answers.get(question, None) is not None:
+    #             if team_answers.get(question) == answer_sheet[question]["answer"]:
+    #                 return "correct"
+    #             else:
+    #                 return "incorrect"
+    #         else:
+    #             return "unanswered"
 
-    # TODO: Make sure we're getting the team name properly
-    # TODO: Template the response
-    @botcmd(split_args_with=" ")
-    def team_status(self, message, args):
-        """Returns a dict of ``{team_name: {question, status}}``"""
+    #     if len(args) < 1 or args[0] == "":
+    #         return "Which team?"
 
-        def result(question, team_answers, answer_sheet):
-            if team_answers.get(question, None) is not None:
-                if team_answers.get(question) == answer_sheet[question]["answer"]:
-                    return "correct"
-                else:
-                    return "incorrect"
-            else:
-                return "unanswered"
+    #     team_name = args[0]
 
-        if len(args) < 1 or args[0] == "":
-            return "Which team?"
+    #     if team_name not in set(self.team_data.keys()):
+    #         return "That's not a team"
 
-        team_name = args[0]
+    #     team_answers = self.team_data[team_name]["answers"]
 
-        if team_name not in set(self.team_data.keys()):
-            return "That's not a team"
+    #     answers = {
+    #         question: result(question, team_answers, ANSWER_SHEET)
+    #         for question in ANSWER_SHEET
+    #     }
+    #     return answers
 
-        team_answers = self.team_data[team_name]["answers"]
-
-        answers = {
-            question: result(question, team_answers, ANSWER_SHEET)
-            for question in ANSWER_SHEET
-        }
-        return answers
-
-    # TODO: template the response to this
     @botcmd(split_args_with=None)
     def leaderboard(self, message, args):
-        """Returns a list of ``(team_name, score)`` tuples, sorted with winningest team first"""
+        """Returns a list of team scores with winningest team first"""
 
         answers = {
             team_name: self.team_data[team_name]["answers"]
@@ -240,4 +234,8 @@ class Clegg(BotPlugin):
             for team_name in answers
         ]
 
-        return sorted(scores, key=lambda x: x[1], reverse=True)
+        leaderboard_data = sorted(scores, key=lambda x: x[1], reverse=True)
+
+        yield "Current leaderboard:"
+        for team, score in leaderboard_data:
+            yield "{:05} - {}".format(score, team)
