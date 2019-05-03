@@ -47,10 +47,6 @@ import io
 import json
 import os
 
-# TODO: Load this in from file on startup
-ANSWER_SHEET = {
-    "crypto1": {"answer": "bloop", "score": 150},
-    "crypto2": {"answer": "baasdfsdf", "score": 200},
 }
 
 
@@ -89,7 +85,27 @@ class Clegg(BotPlugin):
     Clegg
     """
 
+    def load_question_data(self):
+        try:
+            self.data_file = os.environ["CLEGG_QUESTIONS_FILE"]
+        except Exception:
+            self.log.error("Missing CLEGG_QUESTIONS_FILE env var")
+            raise Exception("Missing CLEGG_QUESTIONS_FILE env var")
+
+        filename = self.data_file
+        with open(filename) as f:
+            try:
+                self.answer_sheet = json.load(f)
+            except Exception:
+                self.log.exception("JSON Exception")
+
     def load_team_data(self):
+        try:
+            self.data_file = os.environ["CLEGG_DATA_FILE"]
+        except Exception:
+            self.log.error("Missing CLEGG_DATA_FILE env var")
+            raise Exception("Missing CLEGG_DATA_FILE env var")
+
         filename = self.data_file
         with open(filename) as f:
             try:
@@ -109,13 +125,9 @@ class Clegg(BotPlugin):
         You should delete it if you're not using it to override any default behaviour
         """
 
-        try:
-            self.data_file = os.environ["CLEGG_DATA_FILE"]
-        except Exception:
-            self.log.error("Missing CLEGG_DATA_FILE env var")
-            raise Exception("Missing CLEGG_DATA_FILE env var")
-
         self.load_team_data()
+
+        self.load_question_data()
 
         super(Clegg, self).activate()
 
@@ -134,7 +146,7 @@ class Clegg(BotPlugin):
             return "That team is already registered"
 
         if sender in team_captains:
-            return "You've already registered a team: {}".format("team")
+            return "You've already registered a team ({})".format("team")
 
         self.team_data[team_name] = {
             "captain": sender,
@@ -177,8 +189,8 @@ class Clegg(BotPlugin):
             return "You're not the boss of me. Or of that team."
 
         answers_to_questions = {
-            ANSWER_SHEET[question]["answer"]: question
-            for question in ANSWER_SHEET
+            self.answer_sheet[question]["answer"]: question
+            for question in self.answer_sheet
         }
 
         if answer in answers_to_questions:
@@ -213,8 +225,8 @@ class Clegg(BotPlugin):
     #     team_answers = self.team_data[team_name]["answers"]
 
     #     answers = {
-    #         question: result(question, team_answers, ANSWER_SHEET)
-    #         for question in ANSWER_SHEET
+    #         question: result(question, team_answers, self.answer_sheet)
+    #         for question in self.answer_sheet
     #     }
     #     return answers
 
@@ -229,7 +241,7 @@ class Clegg(BotPlugin):
         scores = [
             (
                 team_name,
-                total_score(score_team_answers(answers[team_name], ANSWER_SHEET)),
+                total_score(score_team_answers(answers[team_name], self.answer_sheet)),
             )
             for team_name in answers
         ]
@@ -238,4 +250,4 @@ class Clegg(BotPlugin):
 
         yield "Current leaderboard:"
         for team, score in leaderboard_data:
-            yield "{:05} - {}".format(score, team)
+            yield "{} - {}".format(score, team)
