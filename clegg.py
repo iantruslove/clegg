@@ -243,9 +243,10 @@ class Clegg(BotPlugin):
 
         team_answers = self.team_data[team_name]["answers"]
 
+        message = ""
         for question in self.answer_sheet:
-            yield "- {} - {}".format(question, result(question, team_answers, self.answer_sheet))
-
+            message += "- {} - {}".format(question, result(question, team_answers, self.answer_sheet))
+        return message
 
     @botcmd(split_args_with=None)
     def leaderboard(self, message, args):
