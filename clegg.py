@@ -48,6 +48,12 @@ import json
 import os
 
 
+def is_captain(team, captain, team_data):
+    if captain is None:
+        return False
+    data = team_data.get(team, {})
+    return data.get("captain", None) == captain
+
 def get_stripped_username(message):
     return str(message.frm).split("!")[0]
 
@@ -186,13 +192,6 @@ class Clegg(BotPlugin):
         team_name, answer = args
 
         self.log.info("Sender: %s, Team: %s, Answer: %s", sender, team_name, answer)
-
-        def is_captain(team, captain, team_data):
-            if captain is None:
-                return False
-            data = team_data.get(team, {})
-            return data.get("captain", None) == captain
-
         self.log.info("Teams: %s", list(self.team_data.keys()))
 
         if team_name not in set(self.team_data.keys()):
@@ -214,34 +213,39 @@ class Clegg(BotPlugin):
         else:
             return "Nice try. But not good enough. Try again."
 
-    # @botcmd(split_args_with=" ")
-    # def team_status(self, message, args):
-    #     """Returns a dict of ``{team_name: {question, status}}``"""
+    @botcmd(split_args_with=" ")
+    def team_status(self, message, args):
+        """What challenges a team completed"""
 
-    #     def result(question, team_answers, answer_sheet):
-    #         if team_answers.get(question, None) is not None:
-    #             if team_answers.get(question) == answer_sheet[question]["answer"]:
-    #                 return "correct"
-    #             else:
-    #                 return "incorrect"
-    #         else:
-    #             return "unanswered"
+        def result(question, team_answers, answer_sheet):
+            if team_answers.get(question, None) is not None:
+                if team_answers.get(question) == answer_sheet[question]["answer"]:
+                    return "correct"
+                else:
+                    return "incorrect"
+            else:
+                return "unanswered"
 
-    #     if len(args) < 1 or args[0] == "":
-    #         return "Which team?"
+        sender = get_stripped_username(message)
 
-    #     team_name = args[0]
+        if len(args) != 1:
+            return "Wrong number of args. <team_name>"
 
-    #     if team_name not in set(self.team_data.keys()):
-    #         return "That's not a team"
+        team_name = args[0]
 
-    #     team_answers = self.team_data[team_name]["answers"]
+        self.log.info("Teams: %s", list(self.team_data.keys()))
 
-    #     answers = {
-    #         question: result(question, team_answers, self.answer_sheet)
-    #         for question in self.answer_sheet
-    #     }
-    #     return answers
+        if team_name not in set(self.team_data.keys()):
+            return "That's still not a team"
+
+        if not is_captain(team_name, sender, self.team_data):
+            return "The Management do not intend to facilitate spying on other teams"
+
+        team_answers = self.team_data[team_name]["answers"]
+
+        for question in self.answer_sheet:
+            yield "- {} - {}".format(question, result(question, team_answers, self.answer_sheet))
+
 
     @botcmd(split_args_with=None)
     def leaderboard(self, message, args):
@@ -290,16 +294,17 @@ class Clegg(BotPlugin):
 
     @botcmd(split_args_with=None)
     def help(self, msg, args):
-        yield "Commands:"
-        yield "- !register"
-        yield "- !answer <team_name> <answer>"
-        yield "- !leaderboard"
-        yield "- !challenges"
-        yield "- !hint <challenge>"
-        yield "- !gitstring"
-        yield "- !gitflag <.git repo url>"
-        yield ""
-        yield "The answers look like"
-        yield "  key{this_is_not_an_answer}"
-        yield "Answer this with"
-        yield "   !answer MyTeamName this_is_not_an_answer"
+        yield "> Commands:"
+        yield "> - !register"
+        yield "> - !answer <team_name> <answer>"
+        yield "> - !team_status"
+        yield "> - !leaderboard"
+        yield "> - !challenges"
+        yield "> - !hint <challenge>"
+        yield "> - !gitstring"
+        yield "> - !gitflag <.git repo url>"
+        yield ">"
+        yield "> The answers look like"
+        yield ">    key{this_is_not_an_answer}"
+        yield "> Answer this with"
+        yield "> !answer MyTeamName this_is_not_an_answer"
