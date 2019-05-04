@@ -245,7 +245,7 @@ class Clegg(BotPlugin):
 
         message = ""
         for question in self.answer_sheet:
-            message += "- {} - {}".format(question, result(question, team_answers, self.answer_sheet))
+            message += "- {} - {}\n".format(question, result(question, team_answers, self.answer_sheet))
         return message
 
     @botcmd(split_args_with=None)
